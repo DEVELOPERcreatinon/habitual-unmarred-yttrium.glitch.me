@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Магазин</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Магазин</h1>
+    <div id="actions"></div>
+    <button id="backButton">Назад в меню</button>
+    <script>
+        const username = localStorage.getItem('username');
+        fetch('/actions')
+            .then(response => response.json())
+            .then(actions => {
+                const actionsDiv = document.getElementById('actions');
+                actions.forEach((action, index) => {
+                    const [type, price, count] = action.split(',');
+                    const actionDiv = document.createElement('div');
+                    actionDiv.className = 'action';
+                    actionDiv.innerHTML = `${type === 'click' ? 'Клики' : 'Кристаллы'}: ${count} за ${price} ${type === 'click' ? 'кристаллов' : 'кликов'}`;
+                    const buyButton = document.createElement('button');
+                    buyButton.innerText = 'Купить';
+                    buyButton.onclick = () => {
+                        fetch('/buy-action', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ username, actionIndex: index })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            alert(data.message || 'Покупка успешна!');
+                        });
+                    };
+                    actionDiv.appendChild(buyButton);
+                    actionsDiv.appendChild(actionDiv);
+                });
+            });
+
+        document.getElementById('backButton').addEventListener('click', function() {
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>
